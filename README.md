@@ -52,7 +52,7 @@ pip install openai requests langfuse
 
 1. 克隆仓库
 ```bash
-git clone https://github.com/YOUR_USERNAME/deepinsight_agent.git
+git clone https://github.com/dession-wu/deepinsight_agent.git
 cd deepinsight_agent
 ```
 
@@ -110,7 +110,9 @@ deepinsight_agent/
 ├── test_error_handler.py      # 错误处理单元测试
 ├── test_memory_summarizer.py  # 记忆摘要单元测试
 │
-└── README.md                  # 本文件
+├── README.md                  # 本文件
+├── LICENSE                    # MIT 许可证
+└── requirements.txt           # 依赖配置
 ```
 
 ### 核心模块说明
@@ -251,6 +253,18 @@ def fetch_your_data_source() -> str:
 
 ---
 
+## 贡献指南
+
+欢迎提交 Issue 和 Pull Request！
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
+
+---
+
 ## 许可证
 
 本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
@@ -269,7 +283,9 @@ def fetch_your_data_source() -> str:
 
 ## 作者
 
-AI Product Architect
+**dession-wu**
+
+- GitHub: [@dession-wu](https://github.com/dession-wu)
 
 ---
 
