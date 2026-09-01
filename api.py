@@ -15,7 +15,10 @@ import uuid
 from datetime import datetime
 from typing import Dict, Optional
 
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 import config
@@ -149,6 +152,15 @@ def get_result(task_id: str):
             resp["error"] = task.get("error")
         resp["finished_at"] = task.get("finished_at")
         return resp
+
+
+# ==========================================
+# Landing Page（根路径静态页，零依赖零构建）
+# 挂载在既有路由之后，不影响 /health /analyze /result /docs
+# ==========================================
+_STATIC_DIR = Path(__file__).resolve().parent / "static"
+if _STATIC_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=str(_STATIC_DIR), html=True), name="landing")
 
 
 if __name__ == "__main__":
