@@ -9,6 +9,9 @@ from datetime import datetime
 from collections import Counter
 import threading
 
+# 集中式配置（模型名等从环境变量读取）
+import config
+
 
 # ==========================================
 # 配置类
@@ -508,7 +511,7 @@ class MemorySummarizer:
 """
             
             response = self.client.chat.completions.create(
-                model="deepseek-v4-flash",
+                model=config.MODEL_NAME,
                 messages=[
                     {"role": "system", "content": "你是一个专业的对话摘要助手。"},
                     {"role": "user", "content": prompt}

@@ -2,173 +2,203 @@
 数据获取模块
 包含从财联社、东方财富等数据源获取数据的函数
 
-此模块独立于 main.py，避免循环导入问题
+此模块独立于 main.py，避免循环导入问题。
+
+实现说明：
+- 财联社采用 nodeapi/telegraphList 接口（原 /api/sw + 假 sign 的实现已废弃，
+  该接口必失败，现统一为原 main.py 中验证可用的版本）。
+- 东方财富采用 push2 隐式 API，与主链路使用中的版本一致。
 """
 
-import json
-import time
-from typing import Dict, List, Any, Optional
+from datetime import datetime
+
+import requests
 
 
 def fetch_cls_telegraph(num_items: int = 20) -> str:
     """
-    从财联社获取实时电报数据
-    
+    从财联社（CLS）电报接口获取最新的财经快讯。
+
     Args:
-        num_items: 获取的电报数量
-        
+        num_items: 获取的新闻条数，默认 20 条，最大建议 50 条。
+
     Returns:
-        格式化的电报文本
+        格式化后的新闻字符串，适合直接输入给大模型。
     """
-    import requests
-    
+    url = "https://www.cls.cn/nodeapi/telegraphList"
+    params = {
+        "app": "CailianpressWeb",
+        "os": "web",
+        "refresh_type": "1",
+        "order": "1",
+        "rn": min(num_items, 50),
+        "sv": "8.4.6",
+        "sign": "8bc6630fbf8b4a195cd99b4da66ed07b"
+    }
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Referer": "https://www.cls.cn/telegraph"
+    }
+
     try:
-        url = f"https://www.cls.cn/api/sw?app=CailianpressWeb&os=web&sv=8.4.6&sign=sign"
-        payload = {
-            "app": "CailianpressWeb",
-            "os": "web",
-            "sv": "8.4.6",
-            "sign": "sign",
-        }
-        
-        response = requests.post(url, json=payload, timeout=15)
+        response = requests.get(url, params=params, headers=headers, timeout=15)
         response.raise_for_status()
         data = response.json()
-        
-        if data.get("code") != 200:
-            return f"⚠️ 财联社 API 返回错误: {data.get('message', '未知错误')}"
-        
-        telegraph_list = data.get("data", {}).get("roll_data", [])
-        if not telegraph_list:
-            return "⚠️ 未能从财联社获取到电报数据。"
-        
-        formatted_items = []
-        count = 0
-        for item in telegraph_list:
-            if count >= num_items:
-                break
+
+        if data.get("error") != 0:
+            return f"❌ 财联社接口返回错误: {data}"
+
+        roll_data = data.get("data", {}).get("roll_data", [])
+        if not roll_data:
+            return "⚠️ 未从财联社获取到任何数据。"
+
+        formatted_news = []
+        for item in roll_data:
+            ctime = item.get("ctime")
+            time_str = datetime.fromtimestamp(ctime).strftime("%m-%d %H:%M") if ctime else "未知时间"
             content = item.get("content", "")
-            formatted_items.append(f"[{count+1}] {content}")
-            count += 1
-        
-        return "\n".join(formatted_items)
-        
+            # 财联社 content 通常已经包含标题，如果 content 为空则使用 brief
+            if not content:
+                content = item.get("brief", "")
+            formatted_news.append(f"[{time_str}] {content}")
+
+        return "\n\n".join(formatted_news)
+
     except requests.exceptions.Timeout:
         return "❌ 请求财联社数据超时。请检查网络连接。"
     except requests.exceptions.RequestException as e:
-        return f"❌ 请求财联社数据时发生网络错误: {e}"
+        return f"❌ 网络请求失败，无法连接财联社: {e}"
     except Exception as e:
-        return f"❌ 处理财联社数据时发生未知错误: {e}"
+        return f"❌ 处理财联社数据时发生错误: {e}"
 
 
 def fetch_eastmoney_industry_capital_flow() -> str:
     """
-    从东方财富获取行业资金流向数据
-    
+    从东方财富网获取行业板块资金流向排行数据。
+    通过调用其内部 push2 接口（隐式 API）获取实时 JSON 数据。
+
     Returns:
-        格式化的资金流向文本
+        格式化后的行业资金流向字符串，适合直接输入给大模型。
     """
-    import requests
-    
+    url = "https://push2.eastmoney.com/api/qt/clist/get"
+    params = {
+        "pn": "1",           # 页码
+        "pz": "20",          # 每页条数
+        "po": "1",           # 排序方向：1降序
+        "np": "1",
+        "fltt": "2",         # 浮点精度
+        "invt": "2",
+        "fid": "f62",        # 按主力净流入排序
+        "fs": "m:90+t:2",    # 行业板块筛选条件
+        "fields": "f12,f14,f2,f3,f62,f128,f140,f136,f141,f207,f208",
+        "_": str(int(datetime.now().timestamp() * 1000))
+    }
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Referer": "https://data.eastmoney.com/bkzj/hy.html"
+    }
+
     try:
-        url = "https://push2.eastmoney.com/api/qt/clist/get"
-        params = {
-            "pn": 1,
-            "pz": 20,
-            "po": 1,
-            "np": 1,
-            "fltt": 2,
-            "invt": 2,
-            "fid": "f62",
-            "fs": "m:90+t:2",
-            "fields": "f12,f14,f2,f3,f62",
-            "_": int(time.time() * 1000)
-        }
-        
-        response = requests.get(url, params=params, timeout=15)
+        response = requests.get(url, params=params, headers=headers, timeout=15)
         response.raise_for_status()
         data = response.json()
-        
-        if data.get("data") is None or not data["data"].get("diff"):
-            return "⚠️ 未能从东方财富获取到行业资金流向数据。"
-        
-        items = data["data"]["diff"]
-        formatted_lines = ["--- 东方财富行业资金流向排行 ---\n"]
-        
-        for i, item in enumerate(items[:10]):
-            industry_name = item.get("f14", "未知行业")
-            change_pct = item.get("f3", 0)
-            main_net_inflow = item.get("f62", 0)
-            
-            change_pct_str = f"+{change_pct}%" if change_pct > 0 else f"{change_pct}%"
-            inflow_str = f"+{main_net_inflow/10000:.1f}亿" if main_net_inflow > 0 else f"{main_net_inflow/10000:.1f}亿"
-            
+
+        if data.get("data") is None:
+            return "⚠️ 东方财富接口未返回数据，可能受反爬限制。"
+
+        diff = data.get("data", {}).get("diff", [])
+        if not diff:
+            return "⚠️ 未从东方财富获取到任何行业资金流向数据。"
+
+        # 字段映射说明（f开头为东方财富内部字段编码）
+        # f12: 板块代码, f14: 板块名称, f2: 最新价, f3: 涨跌幅
+        # f62: 主力净流入(元), f128: 主力净流入占比, f140: 超大单净流入
+        # f136: 超大单净流入占比, f141: 大单净流入, f207: 大单净流入占比
+        formatted_lines = ["【行业板块资金流向排行】\n"]
+
+        for item in diff:
+            name = item.get("f14", "未知板块")
+            change_pct = item.get("f3", "-")
+            main_inflow = item.get("f62", "-")
+            main_inflow_pct = item.get("f128", "-")
+
+            change_str = f"{change_pct:.2f}%" if isinstance(change_pct, (int, float)) else "-"
+            inflow_str = f"{main_inflow/10000:.2f}万" if isinstance(main_inflow, (int, float)) else "-"
+            inflow_pct_str = f"{main_inflow_pct:.2f}%" if isinstance(main_inflow_pct, (int, float)) else "-"
+
             formatted_lines.append(
-                f"{i+1}. {industry_name}: 涨跌幅 {change_pct_str}, 主力净流入 {inflow_str}"
+                f"• {name}: 涨跌幅 {change_str}, 主力净流入 {inflow_str} ({inflow_pct_str})"
             )
-        
+
         return "\n".join(formatted_lines)
-        
+
     except requests.exceptions.Timeout:
         return "❌ 请求东方财富数据超时。请检查网络连接。"
     except requests.exceptions.RequestException as e:
-        return f"❌ 请求东方财富数据时发生网络错误: {e}"
+        return f"❌ 网络请求失败，无法连接东方财富: {e}"
     except Exception as e:
-        return f"❌ 处理东方财富数据时发生未知错误: {e}"
+        return f"❌ 处理东方财富数据时发生错误: {e}"
 
 
 def fetch_eastmoney_stock_spot() -> str:
     """
-    从东方财富获取A股行情快照
-    
+    从东方财富网获取 A 股实时行情快照（全市场涨跌幅前20）。
+
     Returns:
-        格式化的行情文本
+        格式化后的股票行情字符串。
     """
-    import requests
-    
+    url = "https://push2.eastmoney.com/api/qt/clist/get"
+    params = {
+        "pn": "1",
+        "pz": "20",
+        "po": "1",
+        "np": "1",
+        "fltt": "2",
+        "invt": "2",
+        "fid": "f12",
+        "fs": "m:0+t:6,m:0+t:13,m:1+t:2,m:1+t:23",  # 沪深A股
+        "fields": "f12,f14,f2,f3,f4,f5,f6,f7,f8,f9,f10,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152",
+        "_": str(int(datetime.now().timestamp() * 1000))
+    }
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Referer": "https://quote.eastmoney.com/"
+    }
+
     try:
-        url = "https://push2.eastmoney.com/api/qt/clist/get"
-        params = {
-            "pn": 1,
-            "pz": 10,
-            "po": 1,
-            "np": 1,
-            "fltt": 2,
-            "invt": 2,
-            "fid": "f20",
-            "fs": "m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23,m:0+t:81+s:204",
-            "fields": "f12,f14,f2,f3,f4,f5,f6,f7,f8,f9,f10,f18,f20,f21,f22,f23,f24,f25,f26,f33,f34,f35,f36,f37,f38,f39,f40,f41,f42,f43,f44,f45,f46,f47,f48,f49,f50,f51,f52,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64,f65,f66,f67,f68,f69,f70,f71,f72,f73,f74,f75,f76,f77,f78,f79,f80,f81,f82,f83,f84,f85,f86,f87,f88,f89,f90,f91,f92,f93,f94,f95,f96,f97,f98,f99,f100",
-            "_": int(time.time() * 1000)
-        }
-        
-        response = requests.get(url, params=params, timeout=15)
+        response = requests.get(url, params=params, headers=headers, timeout=15)
         response.raise_for_status()
         data = response.json()
-        
-        if data.get("data") is None or not data["data"].get("diff"):
-            return "⚠️ 未能从东方财富获取到A股行情快照。"
-        
-        items = data["data"]["diff"]
-        formatted_lines = ["--- A股行情快照 (Top 10) ---\n"]
-        
-        for i, item in enumerate(items[:10]):
-            stock_name = item.get("f14", "未知")
-            stock_code = item.get("f12", "------")
-            price = item.get("f2", 0)
-            change_pct = item.get("f3", 0)
-            volume = item.get("f5", 0)
-            
-            change_pct_str = f"+{change_pct}%" if change_pct > 0 else f"{change_pct}%"
-            
+
+        if data.get("data") is None:
+            return "⚠️ 东方财富行情接口未返回数据。"
+
+        diff = data.get("data", {}).get("diff", [])
+        if not diff:
+            return "⚠️ 未获取到股票行情数据。"
+
+        formatted_lines = ["【A股实时行情快照】\n"]
+
+        for item in diff[:10]:  # 只展示前10条避免过长
+            code = item.get("f12", "-")
+            name = item.get("f14", "-")
+            price = item.get("f2", "-")
+            change_pct = item.get("f3", "-")
+            change_amt = item.get("f4", "-")
+
+            price_str = f"{price:.2f}" if isinstance(price, (int, float)) else "-"
+            change_str = f"{change_pct:.2f}%" if isinstance(change_pct, (int, float)) else "-"
+            amt_str = f"{change_amt:.2f}" if isinstance(change_amt, (int, float)) else "-"
+
             formatted_lines.append(
-                f"{i+1}. {stock_name}({stock_code}): 最新价 {price}, 涨跌幅 {change_pct_str}, 成交量 {volume}"
+                f"• {name}({code}): 最新价 {price_str}, 涨跌幅 {change_str}, 涨跌额 {amt_str}"
             )
-        
+
         return "\n".join(formatted_lines)
-        
+
     except requests.exceptions.Timeout:
         return "❌ 请求东方财富数据超时。请检查网络连接。"
     except requests.exceptions.RequestException as e:
-        return f"❌ 请求东方财富数据时发生网络错误: {e}"
+        return f"❌ 网络请求失败: {e}"
     except Exception as e:
-        return f"❌ 处理东方财富数据时发生未知错误: {e}"
+        return f"❌ 处理行情数据时发生错误: {e}"

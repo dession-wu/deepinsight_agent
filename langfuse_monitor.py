@@ -22,27 +22,26 @@ from contextlib import contextmanager
 # Langfuse 导入
 from langfuse import Langfuse
 
+# 集中式配置模块（密钥仅从环境变量读取，无默认值）
+import config
+
 
 class LangfuseConfig:
     """Langfuse 配置管理"""
     
-    # 从环境变量或默认值获取配置
-    SECRET_KEY = os.environ.get(
-        "LANGFUSE_SECRET_KEY", 
-        "sk-lf-bd4d337d-896b-4137-b601-603d5d600b92"
+    # 全部从环境变量读取，无任何默认密钥（统一由 config.py 管理）
+    # 注意：模块顶部通过 `import config` 引入，避免重复定义
+    SECRET_KEY = config.LANGFUSE_SECRET_KEY
+    PUBLIC_KEY = config.LANGFUSE_PUBLIC_KEY
+    BASE_URL = config.LANGFUSE_HOST
+
+    # 追踪配置（默认关闭；启用需 LANGFUSE_ENABLED=true 且密钥齐全）
+    ENABLED = (
+        config.LANGFUSE_ENABLED
+        and bool(config.LANGFUSE_SECRET_KEY)
+        and bool(config.LANGFUSE_PUBLIC_KEY)
     )
-    PUBLIC_KEY = os.environ.get(
-        "LANGFUSE_PUBLIC_KEY",
-        "pk-lf-1805ebac-345f-4932-aa1d-622782a88a04"
-    )
-    BASE_URL = os.environ.get(
-        "LANGFUSE_HOST",
-        "https://cloud.langfuse.com"
-    )
-    
-    # 追踪配置
-    ENABLED = os.environ.get("LANGFUSE_ENABLED", "true").lower() == "true"
-    DEBUG = os.environ.get("LANGFUSE_DEBUG", "false").lower() == "true"
+    DEBUG = config.LANGFUSE_DEBUG
     
     @classmethod
     def to_dict(cls) -> Dict[str, Any]:
@@ -351,7 +350,7 @@ if __name__ == "__main__":
                 # 模拟 LLM 调用记录
                 with monitor.log_generation(
                     name="test_generation",
-                    model="deepseek-v4-flash",
+                    model=config.MODEL_NAME,
                     prompt="测试提示词",
                     completion="测试回复",
                     usage={"input": 10, "output": 20, "total": 30},

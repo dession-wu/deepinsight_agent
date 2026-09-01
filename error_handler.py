@@ -8,6 +8,9 @@ from typing import Dict, Any, Callable, Optional, List
 from dataclasses import dataclass, asdict
 from enum import Enum
 
+# 集中式配置（模型名等从环境变量读取）
+import config
+
 
 class ErrorSeverity(Enum):
     """错误严重程度等级"""
@@ -478,7 +481,7 @@ class GlobalErrorHandler:
             prompt = ErrorFormatter.format_for_llm(error)
 
             response = self.client.chat.completions.create(
-                model="deepseek-v4-flash",
+                model=config.MODEL_NAME,
                 messages=[
                     {"role": "system", "content": "你是DeepInsight智能体的错误处理专家。你的任务是分析系统错误并提供专业的修复建议。"},
                     {"role": "user", "content": prompt}
