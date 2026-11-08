@@ -1,0 +1,4 @@
+FROM local-deepinsight-agent-deepinsight-agent:before-branding
+COPY api.py research_accounts.py /app/
+COPY static/workspace.html /app/static/workspace.html
+COPY static/brand /app/static/brand

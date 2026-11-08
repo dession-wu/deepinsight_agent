@@ -1,0 +1,50 @@
+{
+  "name": "local-deepinsight-agent",
+  "networks": {
+    "default": {
+      "name": "deepinsight_agent_default",
+      "ipam": {}
+    }
+  },
+  "services": {
+    "deepinsight-agent": {
+      "restart": "unless-stopped",
+      "command": null,
+      "entrypoint": null,
+      "environment": {
+        "MODEL_NAME": "deepseek-v4-flash",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "TZ": "Asia/Shanghai"
+      },
+      "networks": {
+        "default": null
+      },
+      "build": {
+        "context": "../..",
+        "dockerfile": "Dockerfile"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "python -c \"import urllib.request;urllib.request.urlopen('http://127.0.0.1:8085/health')\""
+        ],
+        "timeout": "10s",
+        "interval": "30s",
+        "retries": 3,
+        "start_period": "15s"
+      },
+      "ports": [
+        {
+          "mode": "ingress",
+          "target": 8085,
+          "published": "8085",
+          "protocol": "tcp",
+          "host_ip": "127.0.0.1"
+        }
+      ],
+      "volumes": [
+        "./runtime/private:/app/private"
+      ]
+    }
+  }
+}

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="面向 A 股市场关注者的财经信息分析工具。整理财经快讯、行业资金流向与行情概览，帮助你开始一次有依据的研究。">
+  <title>DeepInsight · 财经分析工作台</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <aside class="sidebar">
+    <a href="/" class="brand" aria-label="DeepInsight 首页"><span class="brand-mark" aria-hidden="true">di<span>.</span></span><span>DeepInsight<small>财经分析工作台</small></span></a>
+    <div class="sidebar-section">工作空间</div>
+    <nav aria-label="主要导航">
+      <button class="nav-item active" data-view="workspace" aria-current="page"><span aria-hidden="true">＋</span>新建分析</button>
+      <button class="nav-item" data-view="history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7M12 7v5l3 2"/></svg>本机历史<span class="history-count" id="history-count">0</span></button>
+      <button class="nav-item" data-view="guide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6l2 2 2-2h6v15h-6l-2 2-2-2H4zM12 6v15"/></svg>使用指南</button>
+    </nav>
+    <div class="sidebar-note"><span class="note-line"></span><p>从信息出发，<br>形成自己的判断。</p><small>财经快讯 · 资金流向 · 行情概览</small></div>
+    <div class="sidebar-bottom"><a href="/docs" target="_blank" rel="noopener">开发者文档 <span aria-hidden="true">↗</span></a><span>DeepInsight Agent</span></div>
+  </aside>
+  <div class="app-shell">
+    <header class="topbar"><div class="breadcrumb">工作空间 <span>/</span> <strong id="page-name">新建分析</strong></div><button id="health-check" class="service-status" title="点击重新检查服务"><span class="status-dot"></span><span id="health-text">正在检查服务</span></button></header>
+    <main id="main" tabindex="-1">
+      <section id="workspace-view" class="view">
+        <div class="intro"><p class="intro-note">为关注 A 股市场的你</p><h1>今天，想看清哪些市场信息？</h1><p>将财经快讯、行业资金流向和行情概览，整理成更容易阅读的分析。<br class="desktop-break">适合快速了解市场动态，找到值得进一步研究的线索。</p></div>
+        <section class="composer" aria-labelledby="composer-title">
+          <div class="composer-heading"><h2 id="composer-title">开始一次分析</h2><span>选择一个方向，或直接描述你的问题</span></div>
+          <div class="topic-tabs" role="group" aria-label="选择分析方向"><button type="button" class="topic active" data-topic="news" aria-pressed="true">财经快讯</button><button type="button" class="topic" data-topic="capital" aria-pressed="false">行业资金</button><button type="button" class="topic" data-topic="market" aria-pressed="false">行情概览</button></div>
+          <form id="analysis-form"><label for="query" class="sr-only">你的分析问题</label><textarea id="query" maxlength="1800" required rows="3" placeholder="例如：整理财联社最新财经新闻，概括重点事件与值得关注的影响。"></textarea><div class="composer-footer"><span class="input-hint">支持中文提问 <span aria-hidden="true">·</span> <span id="char-count">0</span> / 1800</span><button class="primary-button" id="submit-button" type="submit">开始分析 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button></div></form>
+        </section>
+        <div id="service-message" class="notice" role="status" hidden></div>
+        <div class="suggestions"><span>试试这样问</span><div id="example-list"></div></div>
+        <section id="task-panel" class="task-panel" aria-labelledby="task-title" hidden><div class="task-heading"><div><p class="section-kicker" id="task-label">本次分析</p><h2 id="task-title"></h2></div><span id="task-state" class="state-badge" role="status"></span></div><div id="task-feedback" class="task-feedback" role="status" aria-live="polite"></div><div id="report" class="report" hidden></div><div id="report-caveat" class="report-caveat" hidden>这份分析由 AI 生成。当前接口未返回逐条来源链接或数据获取时间，请对照原始数据核实；内容用于辅助研究。</div><div class="report-actions"><button id="check-result" class="secondary-button" type="button" hidden>继续查询结果</button><button id="copy-result" class="secondary-button" type="button" hidden>复制全文</button><button id="download-result" class="secondary-button" type="button" hidden>下载分析</button><span id="action-message" role="status"></span></div></section>
+        <div class="overview-heading"><h2>把零散信息，变成研究的起点</h2><span>目前支持的三个方向</span></div>
+        <div class="capability-list"><article><div class="capability-number">01</div><h3>财经快讯整理</h3><p>从财联社最新电报中提炼重要事件，快速了解正在发生什么。</p><span>适合：日常资讯浏览</span></article><article><div class="capability-number">02</div><h3>行业资金观察</h3><p>结合东方财富行业资金流向，整理板块表现与需要关注的变化。</p><span>适合：寻找板块研究线索</span></article><article><div class="capability-number">03</div><h3>市场行情概览</h3><p>根据接口返回的部分 A 股行情快照，辅助了解市场，不覆盖全市场。</p><span>适合：行情信息速览</span></article></div>
+        <div class="how-to"><h2>第一次使用？</h2><p><span>1</span> 选择分析方向 <i aria-hidden="true">→</i> <span>2</span> 输入具体问题 <i aria-hidden="true">→</i> <span>3</span> 阅读完整结果并核实信息</p><button type="button" data-view="guide">查看使用指南 <span aria-hidden="true">↗</span></button></div>
+        <p class="boundary-note">当前版本支持信息整理与辅助分析。暂不支持按股票代码精准检索、财报深度研究、自动交叉验证或交易执行。</p>
+      </section>
+      <section id="history-view" class="view" hidden><div class="intro"><p class="intro-note">你的研究记录</p><h1>本机历史</h1><p>最近 15 次任务仅保存在当前浏览器中。清除浏览器数据后将无法找回。<br>已完成的报告可以随时重新阅读；服务器重启后，未完成任务可能失效。</p></div><div id="history-list" class="history-list"></div></section>
+      <section id="guide-view" class="view guide" hidden><div class="intro"><p class="intro-note">从第一个问题开始</p><h1>怎样用好 DeepInsight</h1><p>帮助关注 A 股市场的个人研究者，缩短信息整理时间。</p></div><article class="guide-paper"><h2>你可以用它做什么？</h2><p>整理最新财经新闻、观察行业资金变化，或获取部分 A 股行情的分析概览。结果是基于可获取信息生成的文字分析。</p><h2>如何提出一个好问题？</h2><ol><li>先选择“财经快讯”“行业资金”或“行情概览”。</li><li>说明要整理的内容与期望输出，例如：“整理财联社最新财经新闻，列出五条重点事件及可能影响”。</li><li>点击“开始分析”，等待结果返回。页面会完整显示回答，你可以复制或下载。</li></ol><h2>数据是怎样获取的？</h2><p>当前后端按问题中的关键词选择数据源。“财联社”“财经新闻”“快讯”触发新闻获取；“资金流向”“行业资金”“行情”触发东方财富数据获取。只输入股票代码不会触发精准个股查询。</p><h2>结果有哪些边界？</h2><p>实时数据取决于外部接口是否可用。当前接口没有返回数据抓取是否成功、逐条证据链接或独立验证结果，因此页面不会把分析标为“已验证”，也无法保证每次回答都包含最新数据。</p><p>当前服务使用共享对话上下文，尚未提供独立用户会话。使用时请将每个问题描述完整，避免输入私人信息。历史功能只是本机记录，并非账户级历史。</p><h2>需要接入自己的工具？</h2><p>查看 <a href="/docs" target="_blank" rel="noopener">开发者 API 文档</a>，了解任务提交和结果查询接口。</p></article></section>
+      <footer class="page-footer"><span>DeepInsight · 信息有据，判断有度。</span><span>AI 辅助分析 · 请核实关键信息</span></footer>
+    </main>
+  </div>
+</body>
+</html>

@@ -22,9 +22,9 @@ pip install langfuse
 
 ### 3. API 密钥配置
 
-已在代码中配置您的 API 密钥：
-- **Secret Key**: `sk-lf-bd4d337d-896b-4137-b601-603d5d600b92`
-- **Public Key**: `pk-lf-1805ebac-345f-4932-aa1d-622782a88a04`
+API 密钥已全部改为环境变量注入（参考 `.env.example`），代码中不再硬编码：
+- **Secret Key**: `<你的 Secret Key，见 .env>`
+- **Public Key**: `<你的 Public Key，见 .env>`
 - **Host**: `https://cloud.langfuse.com`
 
 ## 快速开始
@@ -95,8 +95,8 @@ monitor.flush()
 您也可以通过环境变量配置：
 
 ```bash
-export LANGFUSE_SECRET_KEY="sk-lf-bd4d337d-896b-4137-b601-603d5d600b92"
-export LANGFUSE_PUBLIC_KEY="pk-lf-1805ebac-345f-4932-aa1d-622782a88a04"
+export LANGFUSE_SECRET_KEY="<你的 Secret Key>"
+export LANGFUSE_PUBLIC_KEY="<你的 Public Key>"
 export LANGFUSE_HOST="https://cloud.langfuse.com"
 export LANGFUSE_ENABLED="true"
 ```

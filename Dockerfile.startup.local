@@ -1,0 +1,2 @@
+FROM local-research:before-startup-fix
+COPY --chown=appuser:appuser api.py research_accounts.py /app/

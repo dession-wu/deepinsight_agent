@@ -34,6 +34,9 @@ from data_fetchers import (
 from error_handler import GlobalErrorHandler, ErrorFormatter
 from memory_summarizer import MemorySummarizer
 
+# 集中式配置（模型名等从环境变量读取）
+import config
+
 
 class DeepInsightMultiAgent:
     """
@@ -247,7 +250,7 @@ class DeepInsightMultiAgent:
         
         try:
             response = self.client.chat.completions.create(
-                model="deepseek-v4-flash",
+                model=config.MODEL_NAME,
                 messages=[
                     {"role": "system", "content": "你是专业的金融数据分析师。"},
                     {"role": "user", "content": analysis_prompt}
@@ -335,10 +338,14 @@ class DeepInsightMultiAgent:
 
 async def test_multi_agent_integration():
     """测试多智能体集成"""
-    from main import client, error_handler, summarizer
-    
+    # 多智能体框架未接入主链路，此测试函数仅保留演示用途：
+    # 通过 DeepInsightEngine 延迟初始化组件，替代原 `from main import client`（已重构移除）
+    from main import DeepInsightEngine
+
+    engine = DeepInsightEngine()
+
     # 创建集成实例
-    integration = DeepInsightMultiAgent(client, error_handler, summarizer)
+    integration = DeepInsightMultiAgent(engine.client, engine.error_handler, engine.summarizer)
     
     # 初始化
     await integration.initialize()

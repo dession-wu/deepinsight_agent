@@ -48,3 +48,25 @@ Thumbs.db
 # Test outputs
 test_*.pyc
 test_fix.py
+
+# Local runtime data and private configuration
+node_modules/
+.next/
+__pycache__/
+.pytest_cache/
+.venv/
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.db
+*.sqlite*
+*.log
+*.tsbuildinfo
+/private-model-data/
+/data/
+**/uploads/
+project.private.config.json
+*.pem
+*.key
