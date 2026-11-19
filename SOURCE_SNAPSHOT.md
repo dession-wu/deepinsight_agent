@@ -1,5 +1,15 @@
-# Source snapshot — 2026-11-08
+# Source snapshot — 2026-11-19
 
-This repository contains the current local project code, including the latest UI, account isolation, personal model settings and mini-program sources where applicable.
+This repository contains the current local project source as synchronized on 2026-11-19 (Asia/Shanghai). Existing repository visibility is preserved.
 
-Excluded: operator/user API keys, .env files, databases, uploads, audio, model caches, dependency directories and build outputs. Copy .env.example to .env and configure your own credentials; AI/model/provider settings require environment configuration. A successful source sync does not establish production validation of every business flow.
+## Verification
+
+Application source has no substantive differences from the previously published source after line-ending normalization.
+
+The staged source was checked for common credential patterns and excluded private runtime artifacts. This automated scan is limited; it does not establish that all historical commits have been audited.
+
+## Configuration and boundaries
+
+Operator/user API keys, private .env files, databases, uploads, generated resume PDFs, audio, model caches, dependencies and build outputs are excluded. Copy .env.example where supplied and configure your own credentials. Deployment samples use placeholder environment variables; homepage fonts use a repository-relative mount.
+
+This is a source synchronization, not a deployment or a formal WeChat release. Current production flows, real-device behavior, external model quality, platform review and public-platform configuration were not reverified in this synchronization.
